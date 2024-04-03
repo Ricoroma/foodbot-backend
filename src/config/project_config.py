@@ -1,7 +1,7 @@
 import configparser
 
 config = configparser.ConfigParser()
-config.read('config/settings.ini')
+config.read('src/config/settings.ini')
 
 c_data = config['settings']
 # token = c_data['token']
