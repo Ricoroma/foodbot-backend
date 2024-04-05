@@ -11,3 +11,11 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove, FSInputFi
 from aiogram.fsm.context import FSMContext
 
 from src.config.database.database import User
+from tgbot.keyboards.keyboards import main_kb
+
+router = Router()
+
+
+@router.message(Command('start'))
+async def start_handler(message: Message):
+    await message.answer('Добро пожаловать', reply_markup=main_kb())
