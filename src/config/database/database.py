@@ -64,7 +64,8 @@ class Order(Base):
     cart_id = Column(Integer, ForeignKey('carts.id'))
     cart = relationship('Cart')
     claim_way = Column(String, default='')
-    status = Column(String, default='')
+    status = Column(String, default='processing')
+    claim_time = Column(String, default='')
 
 
 def create_db():
