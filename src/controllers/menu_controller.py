@@ -6,16 +6,15 @@ from sqlalchemy.orm import Session
 
 from .telegram_controller import bot
 from ..config.database.database import MenuOption, User, sqlalchemy_to_pydantic, Cart, PositionInCart, Order
-from ..support.dependencies import get_session, get_user_id
+from ..support.dependencies import get_session
 from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel, ClaimWay, OrderModel
 
 router = APIRouter(prefix="/menu", tags=['menu'])
 
 
-@router.get('/positions', response_model=List[MenuOptionModel])
-async def get_all_positions(category: str | None = None,
-                            db_session: Session = Depends(get_session),
-                            user_id: int = Depends(get_user_id)):
+@router.get('/{user_id}/positions', response_model=List[MenuOptionModel])
+async def get_all_positions(user_id: int, category: str | None = None,
+                            db_session: Session = Depends(get_session)):
     positions_in_cart: List[PositionInCart] = db_session.query(Cart).filter(
         Cart.user_id == user_id).first().positions or []
 
@@ -40,20 +39,18 @@ async def get_all_categories(db_session: Session = Depends(get_session)):
     return categories
 
 
-@router.get('/position', response_model=MenuOptionModel)
-async def get_position_by_id(position_id: int,
-                             db_session: Session = Depends(get_session),
-                             user_id: int = Depends(get_user_id)):
+@router.get('/{user_id}/position', response_model=MenuOptionModel)
+async def get_position_by_id(position_id: int, user_id: int,
+                             db_session: Session = Depends(get_session)):
     position = db_session.query(MenuOption).get(position_id)
     amount = next((i.amount for i in db_session.query(Cart).filter(Cart.user_id == user_id).first().positions), 0)
 
     return MenuOptionModel(**position.__dict__, amount_in_cart=amount)
 
 
-@router.post('/update_cart', response_model=CartModel)
-async def update_cart(update: UpdateCartRequest,
-                      db_session: Session = Depends(get_session),
-                      user_id: int = Depends(get_user_id)):
+@router.post('/{user_id}/update_cart', response_model=CartModel)
+async def update_cart(user_id: int, update: UpdateCartRequest,
+                      db_session: Session = Depends(get_session)):
     cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
 
     if any(i.position_id == update.position_id for i in cart.positions):
@@ -81,9 +78,8 @@ async def update_cart(update: UpdateCartRequest,
     return CartModel(total_price=total_price, positions=positions)
 
 
-@router.get('/cart', response_model=CartModel)
-async def get_cart_by_user_id(cart_id: int | None = None, db_session: Session = Depends(get_session),
-                              user_id: int = Depends(get_user_id)):
+@router.get('/{user_id}/cart', response_model=CartModel)
+async def get_cart_by_user_id(user_id: int, cart_id: int | None = None, db_session: Session = Depends(get_session)):
     if cart_id:
         cart = db_session.query(Cart).filter(Cart.id == cart_id).first()
     else:

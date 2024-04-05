@@ -60,7 +60,7 @@ class Order(Base):
     __tablename__ = 'orders'
     id = Column(Integer(), primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship('User')
+    user = relationship('User', overlaps="orders")
     order_time = Column(String, default=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     cart_id = Column(Integer, ForeignKey('carts.id'))
     cart = relationship('Cart')

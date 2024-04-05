@@ -6,17 +6,16 @@ from sqlalchemy.orm import Session
 
 from .telegram_controller import bot
 from ..config.database.database import MenuOption, User, sqlalchemy_to_pydantic, Cart, PositionInCart, Order
-from ..support.dependencies import get_session, get_user_id
+from ..support.dependencies import get_session
 from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel, ClaimWay, OrderModel
 
 router = APIRouter(prefix="/order", tags=['order'])
 
 
-@router.get('/create_order', response_model=OrderModel)
-async def create_order_from_user_cart(claim_way: ClaimWay,
+@router.get('/{user_id}/create_order', response_model=OrderModel)
+async def create_order_from_user_cart(user_id: int, claim_way: ClaimWay,
                                       note: str | None = None,
-                                      db_session: Session = Depends(get_session),
-                                      user_id: int = Depends(get_user_id)):
+                                      db_session: Session = Depends(get_session)):
     cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
 
     order = Order(user_id=user_id, cart_id=cart.id, claim_way=claim_way.value, note=note or 'Пусто')
@@ -26,9 +25,8 @@ async def create_order_from_user_cart(claim_way: ClaimWay,
     return order
 
 
-@router.get('/finish_order', response_model=bool)
-async def finish_order_by_id(order_id: int, db_session: Session = Depends(get_session),
-                             user_id: int = Depends(get_user_id)):
+@router.get('/{user_id}/finish_order', response_model=bool)
+async def finish_order_by_id(user_id: int, order_id: int, db_session: Session = Depends(get_session)):
     db_session.query(Order).filter(Order.id == order_id).update(
         {
             Order.status: 'finished',
