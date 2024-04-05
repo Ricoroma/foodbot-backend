@@ -19,7 +19,7 @@ async def create_order_from_user_cart(claim_way: ClaimWay,
                                       user_id: int = Depends(get_user_id)):
     cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
 
-    order = Order(user_id=user_id, cart_id=cart.id, claim_way=claim_way.value, note=note)
+    order = Order(user_id=user_id, cart_id=cart.id, claim_way=claim_way.value, note=note or 'Пусто')
     db_session.add(order)
     db_session.commit()
 
