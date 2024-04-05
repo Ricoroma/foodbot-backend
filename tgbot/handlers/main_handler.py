@@ -18,4 +18,5 @@ router = Router()
 
 @router.message(Command('start'))
 async def start_handler(message: Message):
+
     await message.answer('Добро пожаловать', reply_markup=main_kb())
