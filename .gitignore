@@ -1,5 +1,5 @@
 *.db
-migrations/versions
+migrations/versions/*
 .idea/
 /src/test.py
 /test.py

@@ -24,6 +24,7 @@ class User(Base):
     id = Column(Integer(), primary_key=True)
     full_name = Column(String)
     cart = relationship('Cart')
+    orders = relationship('Order')
 
 
 class MenuOption(Base):
@@ -66,6 +67,7 @@ class Order(Base):
     claim_way = Column(String, default='')
     status = Column(String, default='processing')
     claim_time = Column(String, default='')
+    note = Column(String, default='')
 
 
 def create_db():
@@ -88,7 +90,5 @@ def sqlalchemy_to_pydantic(db_model: Type[Base], **field_definitions) -> Type[Ba
         **annotations,
     )
 
-
-# Пример использования
 
 create_db()
