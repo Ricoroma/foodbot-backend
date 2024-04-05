@@ -1,12 +1,15 @@
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel
 
-from src.config.database.database import sqlalchemy_to_pydantic, MenuOption, Order
+from src.config.database.database import sqlalchemy_to_pydantic, MenuOption, Order, User
 
 MenuOptionModel = sqlalchemy_to_pydantic(MenuOption, amount_in_cart=(int, ...))
 
 OrderModel = sqlalchemy_to_pydantic(Order)
+
+ProfileModel = sqlalchemy_to_pydantic(User, orders=(List[OrderModel], ...))
 
 
 class UpdateCartRequest(BaseModel):

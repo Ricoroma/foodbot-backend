@@ -82,9 +82,13 @@ async def update_cart(update: UpdateCartRequest,
 
 
 @router.get('/cart', response_model=CartModel)
-async def get_cart_by_user_id(db_session: Session = Depends(get_session),
+async def get_cart_by_user_id(cart_id: int | None = None, db_session: Session = Depends(get_session),
                               user_id: int = Depends(get_user_id)):
-    cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
+    if cart_id:
+        cart = db_session.query(Cart).filter(Cart.id == cart_id).first()
+    else:
+        cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
+
     positions_in_cart: List[PositionInCart] = cart.positions
 
     positions = []
@@ -95,31 +99,3 @@ async def get_cart_by_user_id(db_session: Session = Depends(get_session),
         positions.append(MenuOptionModel(**menu_option.__dict__, amount_in_cart=position_ic.amount))
 
     return CartModel(total_price=total_price, positions=positions)
-
-
-@router.get('/create_order', response_model=OrderModel)
-async def create_order_from_user_cart(claim_way: ClaimWay, db_session: Session = Depends(get_session),
-                                      user_id: int = Depends(get_user_id)):
-    cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
-
-    order = Order(user_id=user_id, cart_id=cart.id, claim_way=claim_way.value)
-    db_session.add(order)
-    db_session.commit()
-
-    return order
-
-
-@router.get('/finish_order', response_model=bool)
-async def finish_order_by_id(order_id: int, db_session: Session = Depends(get_session),
-                             user_id: int = Depends(get_user_id)):
-    db_session.query(Order).filter(Order.id == order_id).update(
-        {
-            Order.status: 'finished',
-            Order.claim_time: datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        }
-    )
-
-    db_session.commit()
-    # await bot.send_message(user_id, f'Заказ номер {order_id} готов к выдаче.')
-
-    return True
