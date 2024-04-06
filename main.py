@@ -7,6 +7,8 @@ import uvicorn
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Update
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+
 from aiogram import Bot, Dispatcher, types
 import os
 
@@ -43,6 +45,12 @@ async def lifespan(app: FastAPI):
 def get_application() -> FastAPI:
     application = FastAPI(lifespan=lifespan)
     application.include_router(get_apps_router())
+    application.add_middleware(CORSMiddleware,
+                               allow_origins=["*"],
+                               allow_credentials=True,
+                               allow_methods=["*"],
+                               allow_headers=["*"],
+                               )
 
     return application
 
