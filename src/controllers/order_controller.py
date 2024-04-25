@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from .telegram_controller import bot
 from ..config.database.database import MenuOption, User, sqlalchemy_to_pydantic, Cart, PositionInCart, Order
 from ..support.dependencies import get_session
-from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel, ClaimWay, OrderModel
+from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel, ClaimWay, OrderModel, UserNotFoundException
 
 router = APIRouter(prefix="/order", tags=['order'])
 
@@ -16,7 +16,13 @@ router = APIRouter(prefix="/order", tags=['order'])
 async def create_order_from_user_cart(user_id: int, claim_way: ClaimWay,
                                       note: str | None = None,
                                       db_session: Session = Depends(get_session)):
+    user = db_session.query(User).get(user_id)
+    if not user:
+        raise UserNotFoundException(user_id)
+
     cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
+    if not cart.postions:
+        raise
 
     order = Order(user_id=user_id, cart_id=cart.id, claim_way=claim_way.value, note=note or 'Пусто')
     db_session.add(order)
@@ -27,6 +33,10 @@ async def create_order_from_user_cart(user_id: int, claim_way: ClaimWay,
 
 @router.get('/{user_id}/finish_order', response_model=bool)
 async def finish_order_by_id(user_id: int, order_id: int, db_session: Session = Depends(get_session)):
+    user = db_session.query(User).get(user_id)
+    if not user:
+        raise UserNotFoundException(user_id)
+
     db_session.query(Order).filter(Order.id == order_id).update(
         {
             Order.status: 'finished',
