@@ -37,7 +37,8 @@ class MenuOption(Base):
     positive_grades = Column(Integer, default=0)
     negative_grades = Column(Integer, default=0)
     note = Column(String, default='')
-    category = Column(String)
+    category_id = Column(Integer, ForeignKey('categories.id'))
+    category = relationship('Category')
 
 
 class PositionInCart(Base):
@@ -68,6 +69,14 @@ class Order(Base):
     status = Column(String, default='processing')
     claim_time = Column(String, default='')
     note = Column(String, default='')
+
+
+class Category(Base):
+    __tablename__ = 'categories'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    description = Column(String)
+    menu_options = relationship('MenuOption')
 
 
 def create_db():
