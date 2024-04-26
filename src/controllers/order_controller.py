@@ -54,3 +54,10 @@ async def finish_order_by_id(user_id: int, order_id: int, db_session: Session = 
 async def get_order_by_id(order_id: int, db_session: Session = Depends(get_session)):
     order = db_session.query(Order).get(order_id)
     return order
+
+
+@router.get('/active_orders', response_model=list[OrderModel])
+async def get_active_orders(db_session: Session = Depends(get_session)):
+    orders = db_session.query(Order).filter(Order.status == 'processing').all()
+
+    return orders

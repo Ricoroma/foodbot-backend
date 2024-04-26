@@ -9,6 +9,8 @@ from src.config.database.database import sqlalchemy_to_pydantic, MenuOption, Ord
 
 MenuOptionModel = sqlalchemy_to_pydantic(MenuOption, amount_in_cart=(int, ...), category=(str, ...))
 
+MenuOptionAdminModel = sqlalchemy_to_pydantic(MenuOption, category=(str, ...))
+
 OrderModel = sqlalchemy_to_pydantic(Order)
 
 ProfileModel = sqlalchemy_to_pydantic(User, orders=(List[OrderModel], ...))
@@ -21,9 +23,25 @@ class UpdateCartRequest(BaseModel):
     amount: int
 
 
+class UpdateCategoryRequest(BaseModel):
+    category_id: int | None
+    name: str | None
+    description: str | None
+
+
 class CartModel(BaseModel):
     total_price: int
     positions: list[MenuOptionModel]
+
+
+class UpdateMenuOptionRequest(BaseModel):
+    id: int | None
+    name: str | None
+    price: int | None
+    description: str | None
+    img_source: str | None
+    note: str | None
+    category_id: int | None
 
 
 class ClaimWay(str, Enum):
