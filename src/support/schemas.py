@@ -24,9 +24,9 @@ class UpdateCartRequest(BaseModel):
 
 
 class UpdateCategoryRequest(BaseModel):
-    category_id: int | None
-    name: str | None
-    description: str | None
+    category_id: int | None = None
+    name: str | None = None
+    description: str | None = None
 
 
 class CartModel(BaseModel):
@@ -35,13 +35,13 @@ class CartModel(BaseModel):
 
 
 class UpdateMenuOptionRequest(BaseModel):
-    id: int | None
-    name: str | None
-    price: int | None
-    description: str | None
-    img_source: str | None
-    note: str | None
-    category_id: int | None
+    id: int | None = None
+    name: str | None = None
+    price: int | None = None
+    description: str | None = None
+    img_source: str | None = None
+    note: str | None = None
+    category_id: int | None = None
 
 
 class ClaimWay(str, Enum):
