@@ -1,5 +1,5 @@
 from fastapi import APIRouter, FastAPI
-from src.controllers import menu_controller, telegram_controller, order_controller, profile_controller
+from src.controllers import menu_controller, telegram_controller, order_controller, profile_controller, admin_controller
 from src.controllers.exceptions_controller import user_not_found_exception_handler, \
     category_not_found_exception_handler, position_not_found_exception_handler, update_cart_exception_handler, \
     empty_cart_exception_handler
@@ -9,7 +9,7 @@ from src.support.schemas import UserNotFoundException, CategoryNotFoundException
 def get_apps_router():
     router = APIRouter()
 
-    # router.include_router(admin_controller.router)
+    router.include_router(admin_controller.router)
     router.include_router(menu_controller.router)
     router.include_router(telegram_controller.router)
     router.include_router(order_controller.router)
