@@ -24,7 +24,7 @@ class UpdateCartRequest(BaseModel):
 
 
 class UpdateCategoryRequest(BaseModel):
-    category_id: int | None = None
+    id: int | None = None
     name: str | None = None
     description: str | None = None
 
@@ -82,7 +82,7 @@ class PositionNotFoundException(HTTPException):
 class UpdateCartException(HTTPException):
     def __init__(self, position_id: int, amount: int):
         self.detail = {
-            "error": "Position Amount Below Zero",
+            "error": "Position Amount Below Zero Or Position Not Found",
             "status_code": status.HTTP_400_BAD_REQUEST,
             "position_id": position_id,
             "amount": amount
@@ -98,3 +98,61 @@ class EmptyCartException(HTTPException):
             "user_id": user_id,
         }
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=self.detail)
+
+
+class OrderNotFoundException(HTTPException):
+    def __init__(self, order_id: int):
+        self.detail = {
+            "error": "User Not Found",
+            "status_code": status.HTTP_400_BAD_REQUEST,
+            "order_id": order_id
+        }
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=self.detail)
+
+
+class UpdateErrorException(HTTPException):
+    def __init__(self, error, params: dict):
+        self.detail = {
+            "error": error,
+            "status_code": status.HTTP_400_BAD_REQUEST,
+            **params
+        }
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=self.detail)
+
+
+class AuthenticationFailedException(HTTPException):
+    def __init__(self, username: str, password: str):
+        self.detail = {
+            "error": 'Authentication Failed',
+            "status_code": status.HTTP_401_UNAUTHORIZED,
+            "username": username,
+            "password": password
+        }
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=self.detail)
+
+
+class RoleValidationFailedException(HTTPException):
+    def __init__(self, token: str):
+        self.detail = {
+            "error": 'Role Validation Failed',
+            "status_code": status.HTTP_401_UNAUTHORIZED,
+            "token": token
+        }
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=self.detail)
+
+
+class PermissionsException(HTTPException):
+    def __init__(self, token: str, role: str, required_role: str):
+        self.detail = {
+            "error": 'Lack Of Permissions',
+            "status_code": status.HTTP_401_UNAUTHORIZED,
+            "token": token,
+            "role": role,
+            "required_role": required_role
+        }
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=self.detail)
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str

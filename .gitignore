@@ -3,3 +3,4 @@ migrations/versions/*
 .idea/
 /src/test.py
 /test.py
+/src/config/settings.ini

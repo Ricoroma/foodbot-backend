@@ -12,7 +12,8 @@ from .telegram_controller import bot
 from ..config.database.database import MenuOption, User, sqlalchemy_to_pydantic, Cart, PositionInCart, Order
 from ..support.dependencies import get_session
 from ..support.schemas import UserNotFoundException, CategoryNotFoundException, PositionNotFoundException, \
-    UpdateCartException, EmptyCartException
+    UpdateCartException, EmptyCartException, OrderNotFoundException, UpdateErrorException, \
+    AuthenticationFailedException, RoleValidationFailedException, PermissionsException
 
 
 async def user_not_found_exception_handler(request: Request, exc: UserNotFoundException):
@@ -44,6 +45,41 @@ async def update_cart_exception_handler(request: Request, exc: UpdateCartExcepti
 
 
 async def empty_cart_exception_handler(request: Request, exc: EmptyCartException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.detail,
+    )
+
+
+async def order_not_found_exception_handler(request: Request, exc: OrderNotFoundException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.detail,
+    )
+
+
+async def update_error_exception_handler(request: Request, exc: UpdateErrorException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.detail,
+    )
+
+
+async def authentication_failed_exception_handler(request: Request, exc: AuthenticationFailedException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.detail,
+    )
+
+
+async def role_validation_failed_exception_handler(request: Request, exc: RoleValidationFailedException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.detail,
+    )
+
+
+async def permissions_exception_handler(request: Request, exc: PermissionsException):
     return JSONResponse(
         status_code=exc.status_code,
         content=exc.detail,

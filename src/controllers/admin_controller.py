@@ -6,18 +6,35 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+from .auth import check_admin
 from .telegram_controller import bot
 from ..config.database.database import MenuOption, User, sqlalchemy_to_pydantic, Cart, PositionInCart, Order, Category
 from ..support.dependencies import get_session
 from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel, UserNotFoundException, \
     PositionNotFoundException, CategoryNotFoundException, UpdateCartException, CategoriesModel, UpdateCategoryRequest, \
-    MenuOptionAdminModel, UpdateMenuOptionRequest
+    MenuOptionAdminModel, UpdateMenuOptionRequest, UpdateErrorException
 
 router = APIRouter(prefix="/admin", tags=['admin'])
+admin_dependency = Annotated[dict, Depends(check_admin)]
+
+router.dependencies.append(Depends(check_admin))
+
+
+@router.post('/check')
+async def check_if_works(admin: admin_dependency):
+    return 200
 
 
 @router.post('/category', response_model=list[CategoriesModel])
 async def add_or_change_category_handler(update: UpdateCategoryRequest, db_session: Session = Depends(get_session)):
+    error = ''
+    if not update:
+        error = 'No Params Provided'
+    if 'id' not in update.model_dump():
+        error = 'No Id Provided'
+    if error:
+        raise UpdateErrorException(error, update.model_dump())
+
     category: Category = db_session.query(Category).get(update.category_id)
     if not category:
         db_session.add(Category(name=update.name, description=update.description))
@@ -36,6 +53,14 @@ async def add_or_change_category_handler(update: UpdateCategoryRequest, db_sessi
 
 @router.post('/position', response_model=list[MenuOptionAdminModel])
 async def update_menu_option(update: UpdateMenuOptionRequest, db_session: Session = Depends(get_session)):
+    error = ''
+    if not update:
+        error = 'No Params Provided'
+    if 'id' not in update.model_dump():
+        error = 'No Id Provided'
+    if error:
+        raise UpdateErrorException(error, update.model_dump())
+
     position: MenuOption = db_session.query(MenuOption).get(update.id)
 
     if not position:
