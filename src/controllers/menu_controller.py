@@ -72,6 +72,8 @@ async def update_cart(user_id: int, update: UpdateCartRequest,
                       db_session: Session = Depends(get_session)):
     if update.amount < 0:
         raise UpdateCartException(update.position_id, update.amount)
+    if not db_session.query(MenuOption).get(update.position_id):
+        raise UpdateCartException(update.position_id, update.amount)
 
     user = db_session.query(User).get(user_id)
     if not user:

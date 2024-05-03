@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from .telegram_controller import bot
 from ..config.database.database import MenuOption, User, sqlalchemy_to_pydantic, Cart, PositionInCart, Order
 from ..support.dependencies import get_session
-from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel, ClaimWay, OrderModel, UserNotFoundException
+from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel, ClaimWay, OrderModel, \
+    UserNotFoundException, OrderNotFoundException
 
 router = APIRouter(prefix="/order", tags=['order'])
 
@@ -53,6 +54,10 @@ async def finish_order_by_id(user_id: int, order_id: int, db_session: Session = 
 @router.get('/get_order', response_model=OrderModel)
 async def get_order_by_id(order_id: int, db_session: Session = Depends(get_session)):
     order = db_session.query(Order).get(order_id)
+
+    if not order:
+        raise OrderNotFoundException
+
     return order
 
 
