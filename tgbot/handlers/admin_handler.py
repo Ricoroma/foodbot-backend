@@ -64,6 +64,37 @@ async def admin_change_category_start(call: CallbackQuery, state: FSMContext):
     await call.answer()
 
 
+@router.callback_query(F.data.startswith('delete_category:'))
+async def admin_delete_category_start(call: CallbackQuery, state: FSMContext, db_session: Session):
+    cat_id = call.data
+    cat_id = int(cat_id)
+
+    category: Category = db_session.query(Category).get(cat_id)
+
+    await call.message.edit_text(
+        f'Вы уверены, что хотите удалить категорию {category.name}? '
+        f'Это также затронет все товары, относящиеся к ней',
+        reply_markup=confirm_delete_kb(cat_id, 'category')
+    )
+
+
+@router.callback_query(F.data.startswith('confirm_delete'))
+async def admin_delete_category(call: CallbackQuery, state: FSMContext, db_session: Session):
+    type, id = call.data.split(':')[1:]
+    id = int(id)
+
+    if type == 'category':
+        category: Category = db_session.query(Category).get(id)
+        for menu_option in category.menu_options:
+            db_session.delete(menu_option)
+        db_session.delete(category)
+        db_session.commit()
+
+        categories = db_session.query(Category).all()
+        await call.message.edit_text('<i>Категория добавлена</i>Выберите категорию для продолжения',
+                                     reply_markup=categories_kb(categories))
+
+
 @router.callback_query(F.data == 'cancel')
 async def cancel_action(call: CallbackQuery, state: FSMContext):
     await state.clear()
@@ -139,8 +170,10 @@ async def create_category_handler(message: Message, state: FSMContext, db_sessio
         categories = db_session.query(Category).all()
         await message.answer('<i>Категория добавлена</i>Выберите категорию для продолжения',
                              reply_markup=categories_kb(categories))
+        await message.delete_reply_markup()
 
     elif message.text == '⬅️ Назад':
         await state.update_data(description=None)
         await message.answer('Введите описание категории', reply_markup=back())
+        await state.set_state(AdminState.add_category)
         return
