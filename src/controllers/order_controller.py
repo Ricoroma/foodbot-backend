@@ -8,7 +8,7 @@ from .telegram_controller import bot
 from ..config.database.database import MenuOption, User, sqlalchemy_to_pydantic, Cart, PositionInCart, Order
 from ..support.dependencies import get_session
 from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel, ClaimWay, OrderModel, \
-    UserNotFoundException, OrderNotFoundException
+    UserNotFoundException, OrderNotFoundException, EmptyCartException
 
 router = APIRouter(prefix="/order", tags=['order'])
 
@@ -23,7 +23,7 @@ async def create_order_from_user_cart(user_id: int, claim_way: ClaimWay,
 
     cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
     if not cart.postions:
-        raise
+        raise EmptyCartException(user_id)
 
     order = Order(user_id=user_id, cart_id=cart.id, claim_way=claim_way.value, note=note or 'Пусто')
     db_session.add(order)
@@ -56,7 +56,7 @@ async def get_order_by_id(order_id: int, db_session: Session = Depends(get_sessi
     order = db_session.query(Order).get(order_id)
 
     if not order:
-        raise OrderNotFoundException
+        raise OrderNotFoundException(order_id)
 
     return order
 

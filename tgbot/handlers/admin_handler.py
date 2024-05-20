@@ -46,8 +46,10 @@ async def admin_show_category(call: CallbackQuery, db_session: Session):
 
     category: Category = db_session.query(Category).get(cat_id)
 
-    await call.message.edit_text(f'Категория {category.name}\nОписание:{category.description}',
-                                 reply_markup=category_kb(cat_id))
+    await call.message.edit_text(
+        f'Категория {category.name}\nОписание: {category.description}',
+        reply_markup=category_kb(cat_id)
+    )
 
 
 @router.callback_query(F.data.startswith('change_category:'))
@@ -80,8 +82,10 @@ async def admin_change_category(message: Message, state: FSMContext, db_session:
 
     category: Category = db_session.query(Category).get(cat_id)
 
-    await message.answer(f'Категория {category.name}\nОписание:{category.description}',
-                         reply_markup=category_kb(cat_id))
+    await message.answer(
+        f'Категория {category.name}\nОписание: {category.description}',
+        reply_markup=category_kb(cat_id)
+    )
 
 
 @router.callback_query(F.data == 'new_cat')
@@ -115,8 +119,6 @@ async def process_add_category(message: Message, state: FSMContext, db_session: 
             return
 
         await state.update_data(description=message.text)
-        await message.answer('Введите описание категории', reply_markup=back())
-        return
 
     await message.answer(
         f'<b>Добавление категории</b>\nНазвание: {data["name"]}\nОписание: {data["description"]}',

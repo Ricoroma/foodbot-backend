@@ -36,6 +36,8 @@ def category_kb(cat_id):
 
     builder.button(text='⬅️ Назад', callback_data='categories')
 
+    return builder.adjust(1).as_markup()
+
 
 def confirm_delete_kb(id, type):
     builder = InlineKeyboardBuilder()
