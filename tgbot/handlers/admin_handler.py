@@ -61,6 +61,7 @@ async def admin_change_category_start(call: CallbackQuery, state: FSMContext):
     await state.set_state(AdminState.change_category)
 
     await call.message.answer('Введите новое значение', reply_markup=cancel_kb())
+    await call.answer()
 
 
 @router.callback_query(F.data == 'cancel')
@@ -72,7 +73,6 @@ async def cancel_action(call: CallbackQuery, state: FSMContext):
 
 @router.message(AdminState.change_category)
 async def admin_change_category(message: Message, state: FSMContext, db_session: Session):
-    await state.clear()
     data = await state.get_data()
     cat_id = int(data['cat_id'])
     param = str(data['param'])
@@ -86,6 +86,7 @@ async def admin_change_category(message: Message, state: FSMContext, db_session:
         f'Категория {category.name}\nОписание: {category.description}',
         reply_markup=category_kb(cat_id)
     )
+    await state.clear()
 
 
 @router.callback_query(F.data == 'new_cat')
@@ -121,7 +122,7 @@ async def process_add_category(message: Message, state: FSMContext, db_session: 
         await state.update_data(description=message.text)
 
     await message.answer(
-        f'<b>Добавление категории</b>\nНазвание: {data["name"]}\nОписание: {data["description"]}',
+        f'<b>Добавление категории</b>\nНазвание: {data["name"]}\nОписание: {message.text}',
         reply_markup=confirm_create_category_kb()
     )
 
