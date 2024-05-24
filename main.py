@@ -2,19 +2,10 @@ import asyncio
 import logging
 import platform
 from contextlib import asynccontextmanager
-
-import uvicorn
-from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import Update
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from aiogram import Bot, Dispatcher, types
-import os
-
-from src.config.database.database import sqlalchemy_to_pydantic, User, Category
-from src.config.database.db_config import Session
 from src.config.project_config import webhook_url
 from src.controllers.telegram_controller import dp, bot
 

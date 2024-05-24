@@ -1,18 +1,13 @@
-from typing import Annotated, List
-
 from aiogram import Dispatcher, Bot
+from aiogram.enums import ParseMode
 from aiogram.types import Update
-from fastapi import Depends, HTTPException, Query, APIRouter
-from sqlalchemy.orm import Session
-from ..config.database.database import MenuOption, User, sqlalchemy_to_pydantic, Cart, PositionInCart
+from fastapi import APIRouter
 from ..config.project_config import token
-from ..support.dependencies import get_session
-from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel
 
 router = APIRouter()
 
 dp = Dispatcher()
-bot = Bot(token=token)
+bot = Bot(token=token, parse_mode=ParseMode.HTML)
 
 
 @router.post(f"/hook")
