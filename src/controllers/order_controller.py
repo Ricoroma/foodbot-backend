@@ -53,12 +53,8 @@ async def create_order_from_user_cart(user_id: int, claim_way: ClaimWay,
     return order_model
 
 
-@router.get('/{user_id}/finish_order', response_model=bool)
-async def finish_order_by_id(user_id: int, order_id: int, db_session: Session = Depends(get_session)):
-    user = db_session.query(User).get(user_id)
-    if not user:
-        raise UserNotFoundException(user_id)
-
+@router.get('/finish_order', response_model=bool)
+async def finish_order_by_id(order_id: int, db_session: Session = Depends(get_session)):
     db_session.query(Order).filter(Order.id == order_id).update(
         {
             Order.status: 'finished',
