@@ -111,15 +111,12 @@ async def update_cart(user_id: int, update: UpdateCartRequest,
 
 
 @router.get('/{user_id}/cart', response_model=CartModel)
-async def get_cart_by_user_id(user_id: int, cart_id: int | None = None, db_session: Session = Depends(get_session)):
+async def get_cart_by_user_id(user_id: int, db_session: Session = Depends(get_session)):
     user = db_session.query(User).get(user_id)
     if not user:
         raise UserNotFoundException(user_id)
 
-    if cart_id:
-        cart = db_session.query(Cart).filter(Cart.id == cart_id).first()
-    else:
-        cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
+    cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
 
     positions_in_cart: List[PositionInCart] = cart.positions
 

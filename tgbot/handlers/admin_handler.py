@@ -66,7 +66,7 @@ async def admin_change_category_start(call: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data.startswith('delete_category:'))
 async def admin_delete_category_start(call: CallbackQuery, state: FSMContext, db_session: Session):
-    cat_id = call.data
+    cat_id = call.data.split(':')[1]
     cat_id = int(cat_id)
 
     category: Category = db_session.query(Category).get(cat_id)
@@ -91,8 +91,8 @@ async def admin_delete_category(call: CallbackQuery, state: FSMContext, db_sessi
         db_session.commit()
 
         categories = db_session.query(Category).all()
-        await call.message.edit_text('<i>Категория добавлена</i>Выберите категорию для продолжения',
-                                     reply_markup=categories_kb(categories))
+        await call.message.answer('<i>Категория удалена</i>', reply_markup=ReplyKeyboardRemove())
+        await call.message.edit_text('Выберите категорию для продолжения', reply_markup=categories_kb(categories))
 
 
 @router.callback_query(F.data == 'cancel')
@@ -168,9 +168,8 @@ async def create_category_handler(message: Message, state: FSMContext, db_sessio
         db_session.commit()
 
         categories = db_session.query(Category).all()
-        await message.answer('<i>Категория добавлена</i>Выберите категорию для продолжения',
-                             reply_markup=categories_kb(categories))
-        await message.delete_reply_markup()
+        await message.answer('<i>Категория добавлена</i>', reply_markup=ReplyKeyboardRemove())
+        await message.answer('Выберите категорию для продолжения', reply_markup=categories_kb(categories))
 
     elif message.text == '⬅️ Назад':
         await state.update_data(description=None)

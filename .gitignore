@@ -4,3 +4,5 @@ migrations/versions/*
 /src/test.py
 /test.py
 /src/config/settings.ini
+/static
+db_loader.py

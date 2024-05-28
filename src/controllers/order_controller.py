@@ -1,4 +1,5 @@
 import datetime
+from copy import copy, deepcopy
 from typing import Annotated, List
 
 from fastapi import Depends, HTTPException, Query, APIRouter
@@ -13,7 +14,7 @@ from ..support.schemas import MenuOptionModel, UpdateCartRequest, CartModel, Cla
 router = APIRouter(prefix="/order", tags=['order'])
 
 
-@router.get('/{user_id}/create_order', response_model=OrderModel)
+@router.get('/{user_id}/create_order')
 async def create_order_from_user_cart(user_id: int, claim_way: ClaimWay,
                                       note: str | None = None,
                                       db_session: Session = Depends(get_session)):
@@ -22,22 +23,38 @@ async def create_order_from_user_cart(user_id: int, claim_way: ClaimWay,
         raise UserNotFoundException(user_id)
 
     cart = db_session.query(Cart).filter(Cart.user_id == user_id).first()
-    if not cart.postions:
+    if not cart.positions:
         raise EmptyCartException(user_id)
 
     order = Order(user_id=user_id, cart_id=cart.id, claim_way=claim_way.value, note=note or 'Пусто')
     db_session.add(order)
     db_session.commit()
+    order = db_session.query(Order).get(order.id)
 
-    return order
+    positions = []
+    for position_ic in cart.positions:
+        menu_option: MenuOption = position_ic.position
+
+        menu_option_dict = deepcopy(menu_option.__dict__)
+        menu_option_dict['category'] = menu_option.category.name
+        menu_option_dict['amount_in_cart'] = position_ic.amount
+
+        positions.append(MenuOptionModel(
+            **menu_option_dict)
+        )
+
+    order_model = OrderModel(**order.__dict__, positions=positions)
+
+    cart.user_id = None
+    new_cart = Cart(user_id=user_id)
+    db_session.add(new_cart)
+    db_session.commit()
+
+    return order_model
 
 
-@router.get('/{user_id}/finish_order', response_model=bool)
-async def finish_order_by_id(user_id: int, order_id: int, db_session: Session = Depends(get_session)):
-    user = db_session.query(User).get(user_id)
-    if not user:
-        raise UserNotFoundException(user_id)
-
+@router.get('/finish_order', response_model=bool)
+async def finish_order_by_id(order_id: int, db_session: Session = Depends(get_session)):
     db_session.query(Order).filter(Order.id == order_id).update(
         {
             Order.status: 'finished',
@@ -58,11 +75,39 @@ async def get_order_by_id(order_id: int, db_session: Session = Depends(get_sessi
     if not order:
         raise OrderNotFoundException(order_id)
 
-    return order
+    positions = []
+    for position_ic in order.cart.positions:
+        menu_option: MenuOption = position_ic.position
+
+        menu_option_dict = deepcopy(menu_option.__dict__)
+        menu_option_dict['category'] = menu_option.category.name
+        menu_option_dict['amount_in_cart'] = position_ic.amount
+
+        positions.append(MenuOptionModel(
+            **menu_option_dict)
+        )
+
+    return OrderModel(**order.__dict__, positions=positions)
 
 
 @router.get('/active_orders', response_model=list[OrderModel])
 async def get_active_orders(db_session: Session = Depends(get_session)):
     orders = db_session.query(Order).filter(Order.status == 'processing').all()
 
-    return orders
+    orders_models = []
+    for order in orders:
+        positions = []
+        for position_ic in order.cart.positions:
+            menu_option: MenuOption = position_ic.position
+
+            menu_option_dict = deepcopy(menu_option.__dict__)
+            menu_option_dict['category'] = menu_option.category.name
+            menu_option_dict['amount_in_cart'] = position_ic.amount
+
+            positions.append(MenuOptionModel(
+                **menu_option_dict)
+            )
+
+        orders_models.append(OrderModel(**order.__dict__, positions=positions))
+
+    return orders_models

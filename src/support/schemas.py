@@ -11,7 +11,7 @@ MenuOptionModel = sqlalchemy_to_pydantic(MenuOption, amount_in_cart=(int, ...), 
 
 MenuOptionAdminModel = sqlalchemy_to_pydantic(MenuOption, category=(str, ...))
 
-OrderModel = sqlalchemy_to_pydantic(Order)
+OrderModel = sqlalchemy_to_pydantic(Order, positions=(List[MenuOptionModel], ...))
 
 ProfileModel = sqlalchemy_to_pydantic(User, orders=(List[OrderModel], ...))
 
