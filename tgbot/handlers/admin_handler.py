@@ -7,7 +7,7 @@ from aiogram.utils.formatting import Text
 from aiogram.filters import Command
 from sqlalchemy.orm import Session
 
-from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove, FSInputFile
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove, FSInputFile, URLInputFile
 from aiogram.fsm.context import FSMContext
 
 from src.config.database.database import User, Category
@@ -176,3 +176,45 @@ async def create_category_handler(message: Message, state: FSMContext, db_sessio
         await message.answer('Введите описание категории', reply_markup=back())
         await state.set_state(AdminState.add_category)
         return
+
+
+@router.callback_query(F.data == 'positions')
+@router.message(F.text == 'Позиции меню')
+async def admin_positions_handler(update: Message | CallbackQuery, state: FSMContext, db_session: Session):
+    await state.clear()
+
+    categories = db_session.query(Category).all()
+
+    if isinstance(update, Message):
+        func = update.answer
+    else:
+        func = update.message.edit_text
+
+    await func('Выберите категорию для продолжения', reply_markup=categories_kb(categories))
+
+
+@router.callback_query(F.data.startswith('pos_category:'))
+async def admin_show_category(call: CallbackQuery, db_session: Session, state: FSMContext):
+    cat_id = int(call.data.split(':')[1])
+
+    category: Category = db_session.query(Category).get(cat_id)
+
+    await call.message.edit_text(
+        f'Категория {category.name}\nПозиции:',
+        reply_markup=positions_kb(category.menu_options)
+    )
+
+    await state.update_data(cat_id=cat_id)
+
+
+@router.callback_query(F.data.startswith('position:'))
+async def admin_show_category(call: CallbackQuery, db_session: Session, state: FSMContext):
+    data = await state.get_data()
+    cat_id = data['cat_id']
+
+    pos_id = int(call.data.split(':')[1])
+
+    position: MenuOption = db_session.query(MenuOption).get(pos_id)
+
+    await call.message.delete()
+    await call.message.answer_photo(URLInputFile(position.img_source))

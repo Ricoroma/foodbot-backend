@@ -8,6 +8,6 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 def main_kb():
     builder = InlineKeyboardBuilder()
 
-    builder.button(text='Открыть меню', web_app=WebAppInfo(url='https://shop.ricoroma.ru/docs'))
+    builder.button(text='Открыть меню', web_app=WebAppInfo(url='https://shop.ricoroma.ru'))
 
     return builder.as_markup()
