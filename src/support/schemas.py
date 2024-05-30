@@ -1,3 +1,4 @@
+import datetime
 from enum import Enum
 from typing import List
 
@@ -7,7 +8,8 @@ from starlette import status
 
 from src.config.database.database import sqlalchemy_to_pydantic, MenuOption, Order, User, Category
 
-MenuOptionModel = sqlalchemy_to_pydantic(MenuOption, amount_in_cart=(int, ...), category=(str, ...))
+MenuOptionModel = sqlalchemy_to_pydantic(MenuOption, amount_in_cart=(int, ...), category=(str, ...),
+                                         t=(datetime.datetime, None))
 
 MenuOptionAdminModel = sqlalchemy_to_pydantic(MenuOption, category=(str, ...))
 
@@ -47,6 +49,11 @@ class UpdateMenuOptionRequest(BaseModel):
 class ClaimWay(str, Enum):
     takeaway = 'takeaway'
     dine_in = 'dine_in'
+
+
+class Test(BaseModel):
+    id: int
+    claim_way: ClaimWay
 
 
 class UserNotFoundException(HTTPException):

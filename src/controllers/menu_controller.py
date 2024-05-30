@@ -34,12 +34,15 @@ async def get_all_positions(user_id: int, category: int | None = None,
     else:
         positions = db_session.query(MenuOption).all()
 
-    positions = [MenuOptionModel(**i.__dict__,
-                                 amount_in_cart=next(
-                                     (j.amount for j in positions_in_cart if j.position_id == i.id), 0),
-                                 category=i.category.name
-                                 )
-                 for i in positions]
+    positions = [
+        MenuOptionModel(
+            **i.__dict__,
+            amount_in_cart=next(
+                (j.amount for j in positions_in_cart if j.position_id == i.id), 0),
+            category=i.category.name
+        )
+        for i in positions
+    ]
 
     return positions
 

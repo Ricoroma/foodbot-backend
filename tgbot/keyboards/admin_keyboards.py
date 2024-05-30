@@ -27,6 +27,16 @@ def categories_kb(categories: list[Type[Category]]):
     return builder.adjust(1).as_markup()
 
 
+def positions_categories_kb(categories: list[Type[Category]]):
+    builder = InlineKeyboardBuilder()
+
+    builder.add(*[InlineKeyboardButton(text=i.name, callback_data=f'pos_category:{i.id}') for i in categories])
+
+    builder.button(text='⬅️ Назад', callback_data='main_admin')
+
+    return builder.adjust(1).as_markup()
+
+
 def category_kb(cat_id):
     builder = InlineKeyboardBuilder()
 
@@ -62,7 +72,7 @@ def positions_kb(positions: list[MenuOption]):
     builder.add(*[InlineKeyboardButton(text=i.name, callback_data=f'position:{i.id}') for i in positions])
 
     builder.button(text='Новая позиция меню', callback_data='new_pos')
-    builder.button(text='⬅️ Назад', callback_data='main_admin')
+    builder.button(text='⬅️ Назад', callback_data='positions')
 
     return builder.adjust(1).as_markup()
 
