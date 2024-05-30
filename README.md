@@ -15,3 +15,9 @@ pip install -r requirements.txt
 ## Настройка
 
 В файле src/config/example.ini ставим свои значение параметров и меняем название файла на settings.ini
+
+## Запуск
+
+```commandline
+uvicorn main:app
+```
